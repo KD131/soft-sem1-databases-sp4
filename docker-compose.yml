@@ -3,7 +3,9 @@ services:
     image: redis
     ports:
       - "6379:6379"
-    command: redis-server
+    volumes:
+      - ./conf:/etc/redis/conf
+    command: redis-server /etc/redis/conf/redis.conf
     networks:
       - redis-net
 
@@ -11,7 +13,9 @@ services:
     image: redis
     ports:
       - "6380:6379"
-    command: redis-server --replicaof redis 6379
+    volumes:
+      - ./conf:/etc/redis/conf
+    command: redis-server /etc/redis/conf/repl.conf --masterauth $ADMIN_PWD
     depends_on:
       - redis
     networks:

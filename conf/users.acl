@@ -1,0 +1,2 @@
+user default on ~* &* +@all -@dangerous +INFO #c3a3a21c9f372d5e6738e7b97e9da3d80d00bff7d506502b4d749d9bb3c5425a
+user admin on ~* &* +@all #72da71c503c4f3a81f801ebf6d562f995ceb10c2a3e5b7e1b4dfc5bfec6e153d
