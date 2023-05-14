@@ -1,10 +1,11 @@
 # SP4
 ## Table of contents
 - [SP4](#sp4)
-  - [Replication](#replication)
-  - [Security](#security)
   - [Usage](#usage)
   - [API](#api)
+  - [Configurations](#configurations)
+    - [Replication](#replication)
+    - [Security](#security)
   - [Status](#status)
   - [Reflections](#reflections)
 - [Next.js](#nextjs)
@@ -13,26 +14,6 @@
   - [Deploy on Vercel](#deploy-on-vercel)
 
 This assignment is about Redis and using specific configurations of Redis to make a CRUD application. We had different configurations to choose from and had to setup at least 2, and make use of at least 1 in the application. Makes sense to just use the two in the application to demonstrate the setup.
-
-I've picked the **replication** and **security** configurations.
-
-At first, I wanted to use the clustering (sharding/partitioning) configuration because that's what we demoed in class, but on reading the documentation, it might only work on Linux. [This](https://redis.io/docs/management/scaling/#redis-cluster-and-docker) states that it depends on the Docker `--net=host` networking option, but the [Docker documentation](https://docs.docker.com/network/host/) states that host networking only works on Linux.
-
-Replication and security it is!
-
-## Replication
-I've set up two Redis servers, one master and one replica. The replica specifies `replicaof redis 6479` in its config file. This could also be done as an option to the CLI command. That's really all there is to it. `redis` in this sense is the master Redis instance as defined in `docker-compose.yml`.
-
-If the master fails, the replica takes over. When the master comes back, it attempts to do a partial resynchronisation.
-
-## Security
-I set up an ACL with a password-protected default and admin user. The default user has all dangerous commands disabled so they can't wipe the whole database with `FLUSHDB` or `FLUSHALL`. However, I specifically enabled `INFO` because the `ioredis` Node client uses it when establishing a connection.
-
-I enabled the ACL on both master and replica server, though I don't know if that's strictly needed.
-
-The replica server needs the admin password to connect to the master because the default user does not have permission to run those commands.
-
-I've included the `conf/user.acl` file to show the user configuration, but I've stored the passwords as hashes for security reasons, even though it does not matter in this small project.
 
 ## Usage
 Configure environment variables. I apologise that this step is tedious.
@@ -97,6 +78,28 @@ Here's another just for good measure:
 ```
 
 Please don't `PUT` with a missing or empty games list. It works fine with `POST` because I implemented it differently.
+
+## Configurations
+I've picked the [**replication**](#replication) and [**security**](#security) configurations.
+
+At first, I wanted to use the clustering (sharding/partitioning) configuration because that's what we demoed in class, but on reading the documentation, it might only work on Linux. [This](https://redis.io/docs/management/scaling/#redis-cluster-and-docker) states that it depends on the Docker `--net=host` networking option, but the [Docker documentation](https://docs.docker.com/network/host/) states that host networking only works on Linux.
+
+Replication and security it is!
+
+### Replication
+I've set up two Redis servers, one master and one replica. The replica specifies `replicaof redis 6479` in its config file. This could also be done as an option to the CLI command. That's really all there is to it. `redis` in this sense is the master Redis instance as defined in `docker-compose.yml`.
+
+If the master fails, the replica takes over. When the master comes back, it attempts to do a partial resynchronisation.
+
+### Security
+I set up an ACL with a password-protected default and admin user. The default user has all dangerous commands disabled so they can't wipe the whole database with `FLUSHDB` or `FLUSHALL`. However, I specifically enabled `INFO` because the `ioredis` Node client uses it when establishing a connection.
+
+I enabled the ACL on both master and replica server, though I don't know if that's strictly needed.
+
+The replica server needs the admin password to connect to the master because the default user does not have permission to run those commands.
+
+I've included the `conf/user.acl` file to show the user configuration, but I've stored the passwords as hashes for security reasons, even though it does not matter in this small project.
+
 
 ## Status
 - [x] Replication
