@@ -52,6 +52,21 @@ export async function getUser2(id: string) {
     return user;
 }
 
+// this will delete the user first to reset data which is maybe overkill
+// I could call the delete function, but then it's not part of the transaction
+// maybe there's a way to call a function as argument to multi
+export async function putUser(id: string, data: any) {
+    const { games, ...user } = data;
+    const res = await redis.multi()
+        .del(`user:${id}`)
+        .del(`user:${id}:games`)
+        .hset(`user:${id}`, user)
+        .sadd(`user:${id}:games`, games)    // now there's no check if games is empty which will error
+        .sadd("users", id)
+        .exec();
+    return res;
+}
+
 export async function deleteUser(id: string) {
     const res = await redis.multi()
         .del(`user:${id}`)
@@ -81,6 +96,9 @@ export default async function handler(
             });
             return;
         }
+    }
+    else if (req.method === "PUT") {
+        user = await putUser(id as string, req.body);
     }
     else if (req.method === "DELETE") {
         user = await deleteUser(id as string);
