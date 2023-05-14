@@ -2,8 +2,11 @@ import redis from "@/lib/redis";
 import { NextApiRequest, NextApiResponse } from "next";
 
 export async function postUser(id: string, data: any) {
-    redis.hset(`user:${id}`, data);
-    return data;
+    const { games, ...user } = data;
+    const setUser = redis.hset(`user:${id}`, user);
+    const setGames = redis.sadd(`user:${id}:games`, games);
+    const res = await Promise.all([setUser, setGames]);
+    return res;
 }
 
 export async function getUser(id: string) {
@@ -26,8 +29,6 @@ export default async function handler(
     }
     else if (req.method === "POST") {
         user = await postUser(id as string, req.body);
-
-
     }
 
     res.status(200).json(user);
