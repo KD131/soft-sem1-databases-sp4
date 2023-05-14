@@ -1,5 +1,6 @@
 import redis from "@/lib/redis";
 import { NextApiRequest, NextApiResponse } from "next";
+import { getUser } from "./[id]";
 
 type User = {
     id: string;
@@ -10,6 +11,7 @@ export default async function handler(
     req: NextApiRequest,
     res: NextApiResponse
 ) {
-    const user = await redis.hgetall("user:Alice");
-    res.status(200).json(user)
+    const users = await redis.smembers("users");
+    const usersData = await Promise.all(users.map((id: string) => getUser(id)));
+    return res.status(200).json(usersData);
 }
