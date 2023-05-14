@@ -4,6 +4,9 @@
   - [Replication](#replication)
   - [Security](#security)
   - [Usage](#usage)
+  - [API](#api)
+  - [Status](#status)
+  - [Reflections](#reflections)
 - [Next.js](#nextjs)
   - [Getting Started](#getting-started)
   - [Learn More](#learn-more)
@@ -59,6 +62,55 @@ To get some test data:
 2. ```shell
     cat /etc/redis/conf/data.txt | redis-cli --pipe --user admin
     ```
+
+## API
+There's no frontend. Given more time, it would've been nice to have that set up. Instead I've got an API at `/api/`.
+
+- **`/api/users`**: Get all users
+- **`/api/users/[id]`**: GET/POST/PUT/DELETE on a user
+
+A user looks like this:
+```
+{
+    "name": "Dave",
+    "email": "dave@example.com",
+    "games": [
+        "The Witcher 3: Wild Hunt",
+        "Prey",
+        "Ori and the Will of the Wisps"
+    ]
+}
+```
+
+Here's another just for good measure:
+
+```
+{
+    "name": "Eve",
+    "email": "eve@example.com",
+    "games": [
+        "The Witcher 3: Wild Hunt",
+        "Dota 2",
+        "Portal"
+    ]
+}
+```
+
+Please don't `PUT` with a missing or empty games list. It works fine with `POST` because I implemented it differently.
+
+## Status
+- [x] Replication
+- [x] Security
+- [x] Full CRUD
+- [ ] Frontend
+
+## Reflections
+I experimented with both `Promise.all()` and `redis.multi()` for handling multiple operations. `multi` starts a transaction in Redis which is great for when all operations have to succeed, whereas `Promise.all` would probably return an error or something but still execute some of the database operations.
+
+As previously mentioned, `PUT` is error-prone. I implemented it with `multi` which uses chaining. That's great for writing quick code, but I'm not sure what the best way is to make one of the calls optional. What I did with `POST` (`Promise.all`) allows me to just return null instead of calling a database operation.
+
+Redis only stores strong values for a hash, so to create complex objects, like also having a list of games, I stored those as a set. I had to assemble/dissamble it into/from a full user object.
+
 ***
 # Next.js
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
