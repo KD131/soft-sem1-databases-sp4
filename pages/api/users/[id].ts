@@ -3,8 +3,11 @@ import { NextApiRequest, NextApiResponse } from "next";
 
 // It's not great error handling but it's something.
 // Obviously there should be more.
+// At least if it were a normal database API.
+// I don't know if we have to be as strict with Redis.
 
 export async function postUser(id: string, data: any) {
+    // it will otherwise append to the existing user
     if (await redis.exists(`user:${id}`)) {
         throw new Error("User already exists");
     }
@@ -20,7 +23,12 @@ export async function postUser(id: string, data: any) {
         }
     })();
 
-    const res = await Promise.all([setUser, setGames]);
+    // this should be a transaction
+    const res = await Promise.all([
+        setUser,
+        setGames,
+        redis.sadd("users", id)
+    ]);
     return res;
 }
 
@@ -39,9 +47,18 @@ export async function getUser2(id: string) {
     const [[, user], [, games]] = await redis.multi()
         .hgetall(`user:${id}`)
         .smembers(`user:${id}:games`)
-        .exec()
+        .exec();
     user.games = games;
     return user;
+}
+
+export async function deleteUser(id: string) {
+    const res = await redis.multi()
+        .del(`user:${id}`)
+        .del(`user:${id}:games`)
+        .srem("users", id)
+        .exec();
+    return res;
 }
 
 export default async function handler(
@@ -64,6 +81,16 @@ export default async function handler(
             });
             return;
         }
+    }
+    else if (req.method === "DELETE") {
+        user = await deleteUser(id as string);
+    }
+    else {
+        res.status(405).json({
+            status: 405,
+            error: "Method Not Allowed"
+        });
+        return;
     }
 
     res.status(200).json(user);
