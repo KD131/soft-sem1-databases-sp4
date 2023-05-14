@@ -54,6 +54,11 @@ npm install
 npm run dev
 ```
 
+To get some test data:
+1. Docker exec into the master Redis server, or use Docker Desktop to open a terminal.
+2. ```shell
+    cat /etc/redis/conf/data.txt | redis-cli --pipe --user admin
+    ```
 ***
 # Next.js
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).

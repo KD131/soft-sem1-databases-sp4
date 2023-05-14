@@ -1,0 +1,10 @@
+HSET user:Alice name Alice email alice@example.com
+SADD user:Alice:games "The Elder Scrolls V: Skyrim Special Edition" "Portal" "Counter-Strike: Global Offensive"
+
+HSET user:Bob name Bob email bob@example.com
+SADD user:Bob:games "Counter-Strike: Global Offensive" "ULTRAKILL" "Dota 2"
+
+HSET user:Charlie name Charlie email charlie@example.com
+SADD user:Charlie:games "Team Fortress 2" "Dishonored" "SUPERHOT"
+
+SADD users Alice Bob Charlie
